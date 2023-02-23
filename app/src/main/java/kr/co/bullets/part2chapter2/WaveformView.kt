@@ -13,24 +13,81 @@ class WaveformView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+    
+    private val ampList = mutableListOf<Float>()
+    private val rectList = mutableListOf<RectF>()
 
-    val rectF = RectF(20f, 30f, 20f + 30f, 30f + 60f)
-    val redPaint = Paint().apply {
+    private val rectWidth = 10f
+    private var tick = 0
+
+//    val rectF = RectF(20f, 30f, 20f + 30f, 30f + 60f)
+    private val redPaint = Paint().apply {
         color = Color.RED
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        canvas?.drawRect(rectF, redPaint)
+//        canvas?.drawRect(rectF, redPaint)
+        for (rectF in rectList) {
+            canvas?.drawRect(rectF, redPaint)
+        }
     }
 
     fun addAmplitude(maxAmplitude: Float) {
-        rectF.top = 0f
-        rectF.bottom = maxAmplitude
-        rectF.left = 0f
-        rectF.right = rectF.left + 20f
+        ampList.add(maxAmplitude)
+        rectList.clear()
 
+        val maxRect = (this.width / rectWidth).toInt()
+
+        val amps = ampList.takeLast(maxRect)
+
+        for ((i, amp) in amps.withIndex()) {
+            val rectF = RectF()
+            rectF.top = 0f
+            rectF.bottom = amp
+            rectF.left = i * rectWidth
+            rectF.right = rectF.left + rectWidth
+
+            rectList.add(rectF)
+        }
+
+//        rectF.top = 0f
+//        rectF.bottom = maxAmplitude
+//        rectF.left = 0f
+//        rectF.right = rectF.left + 20f
+
+        invalidate()
+    }
+
+    fun replayAmplitude(duration: Int) {
+        rectList.clear()
+
+        val maxRect = (this.width / rectWidth).toInt()
+        val amps = ampList.take(tick).takeLast(maxRect)
+
+        for ((i, amp) in amps.withIndex()) {
+            val rectF = RectF()
+            rectF.top = 0f
+            rectF.bottom = amp
+            rectF.left = i * rectWidth
+            rectF.right = rectF.left + rectWidth
+
+            rectList.add(rectF)
+        }
+
+        tick++
+
+        invalidate()
+    }
+
+    fun clearData() {
+        ampList.clear()
+    }
+
+    fun cleatWave() {
+        rectList.clear()
+        tick = 0
         invalidate()
     }
 }
